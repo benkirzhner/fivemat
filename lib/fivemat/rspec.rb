@@ -41,11 +41,7 @@ module Fivemat
     end
 
     def pending_fixed?(example)
-      if example.execution_result[:exception].respond_to?(:pending_fixed?)
-        example.execution_result[:exception].pending_fixed?
-      else
-        ::RSpec::Core::PendingExampleFixedError === example.execution_result[:exception]
-      end
+      example.execution_result.fetch(:pending_fixed) { legacy_pending_fixed?(example) }
     end
 
     def dump_pending_fixed(example, index)
@@ -61,6 +57,16 @@ module Fivemat
     def start_dump
       # Skip the call to output.puts in the messiest way possible.
       self.class.superclass.superclass.instance_method(:start_dump).bind(self).call
+    end
+
+  private
+
+    def legacy_pending_fixed?(example)
+      if example.execution_result[:exception].respond_to?(:pending_fixed?)
+        example.execution_result[:exception].pending_fixed?
+      else
+        ::RSpec::Core::PendingExampleFixedError === example.execution_result[:exception]
+      end
     end
   end
 end
